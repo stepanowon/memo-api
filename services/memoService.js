@@ -1,66 +1,16 @@
-const { v4: uuidv4 } = require("uuid");
-let memos, db;
+// 이 파일은 더 이상 사용되지 않습니다.
+// 새로운 아키텍처에서는 다음 서비스들로 분리되었습니다:
+// - MemoReadService: 읽기 전용 작업
+// - MemoWriteService: 쓰기 작업
+// - MemoValidationService: 검증 로직
+// - MemoRepository: 데이터 접근 계층
 
-function init(memosCollection, dbInstance) {
-  memos = memosCollection;
-  db = dbInstance;
-}
+// 하위 호환성을 위해 남겨두었지만, 새로운 코드에서는 사용하지 마세요.
 
-function stripLokiFields(obj) {
-  if (!obj) return obj;
-  const { $loki, meta, ...rest } = obj;
-  return rest;
-}
-
-function getAllMemos(page = 1, pageSize = 10) {
-  const all = memos.find();
-  // regdate 역순 정렬
-  all.sort((a, b) => b.regdate - a.regdate);
-  // 페이징
-  const start = (page - 1) * pageSize;
-  const paged = all.slice(start, start + pageSize);
-  return paged.map(stripLokiFields);
-}
-
-function createMemo(title, content) {
-  const memo = {
-    id: uuidv4(),
-    title,
-    content,
-    regdate: Date.now(),
-  };
-  memos.insert(memo);
-  db.saveDatabase();
-  return stripLokiFields(memo);
-}
-
-function getMemoById(id) {
-  return stripLokiFields(memos.findOne({ id }));
-}
-
-function updateMemo(id, title, content) {
-  const memo = memos.findOne({ id });
-  if (!memo) return null;
-  if (title !== undefined) memo.title = title;
-  if (content !== undefined) memo.content = content;
-  memos.update(memo);
-  db.saveDatabase();
-  return stripLokiFields(memo);
-}
-
-function deleteMemo(id) {
-  const memo = memos.findOne({ id });
-  if (!memo) return false;
-  memos.remove(memo);
-  db.saveDatabase();
-  return true;
-}
+console.warn(
+  "⚠️  services/memoService.js는 더 이상 사용되지 않습니다. 새로운 분리된 서비스들을 사용하세요."
+);
 
 module.exports = {
-  init,
-  getAllMemos,
-  createMemo,
-  getMemoById,
-  updateMemo,
-  deleteMemo,
+  // 빈 모듈 (하위 호환성용)
 };

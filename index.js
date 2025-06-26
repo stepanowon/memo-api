@@ -1,190 +1,76 @@
 const express = require("express");
-const { v4: uuidv4 } = require("uuid");
-const Loki = require("lokijs");
-const swaggerJsdoc = require("swagger-jsdoc");
-const swaggerUi = require("swagger-ui-express");
-const path = require("path");
-const memoService = require("./services/memoService");
-const memoRoutes = require("./routes/memoRoutes");
+const { setupContainer } = require("./container/containerSetup");
+const createMemoRoutes = require("./routes/memoRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// LokiJS DB 초기화
-const db = new Loki(path.join(__dirname, "memos.db"), {
-  autoload: true,
-  autoloadCallback: databaseInitialize,
-  autosave: true,
-  autosaveInterval: 4000,
-});
+async function startServer() {
+  try {
+    // 의존성 주입 컨테이너 설정
+    const container = await setupContainer(PORT);
 
-let memos;
-function databaseInitialize() {
-  memos = db.getCollection("memos");
-  if (memos === null) {
-    memos = db.addCollection("memos", { indices: ["id"] });
+    // Express 미들웨어 설정
+    app.use(express.json());
+
+    // Swagger 설정
+    const swaggerConfig = container.resolve("swaggerConfig");
+    const swaggerMiddleware = swaggerConfig.getSwaggerMiddleware();
+
+    // 라우트 설정 (의존성 주입)
+    const memoRoutes = createMemoRoutes(container);
+    app.use("/memos", memoRoutes);
+
+    // Swagger UI 설정
+    app.use("/api-docs", swaggerMiddleware.serve, swaggerMiddleware.setup);
+
+    // Swagger JSON 엔드포인트
+    app.get("/swagger.json", (req, res) => {
+      res.setHeader("Content-Type", "application/json");
+      res.send(swaggerMiddleware.spec);
+    });
+
+    // 헬스체크 엔드포인트
+    app.get("/health", (req, res) => {
+      res.json({
+        status: "OK",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+      });
+    });
+
+    // 404 핸들러
+    app.use("*", (req, res) => {
+      res.status(404).json({
+        isSuccess: false,
+        message: "요청한 리소스를 찾을 수 없습니다.",
+      });
+    });
+
+    // 전역 에러 핸들러
+    app.use((error, req, res, next) => {
+      console.error("서버 오류:", error);
+      res.status(500).json({
+        isSuccess: false,
+        message: "서버 내부 오류가 발생했습니다.",
+      });
+    });
+
+    // 서버 시작
+    app.listen(PORT, () => {
+      console.log(`🚀 Memo API server running at http://localhost:${PORT}`);
+      console.log(
+        `📚 Swagger UI available at http://localhost:${PORT}/api-docs`
+      );
+      console.log(
+        `💓 Health check available at http://localhost:${PORT}/health`
+      );
+    });
+  } catch (error) {
+    console.error("서버 시작 중 오류가 발생했습니다:", error);
+    process.exit(1);
   }
-  // 서비스에 memos와 db 주입
-  memoService.init(memos, db);
 }
 
-app.use(express.json());
-
-// Swagger 설정
-const swaggerDefinition = {
-  openapi: "3.0.0",
-  info: {
-    title: "Memo API",
-    version: "1.0.0",
-    description: "A simple REST API for memos",
-  },
-  servers: [
-    {
-      url: "http://localhost:" + PORT,
-    },
-  ],
-};
-
-const options = {
-  swaggerDefinition,
-  apis: ["./routes/memoRoutes.js"],
-};
-
-const swaggerSpec = swaggerJsdoc(options);
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Memo:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           format: uuid
- *         title:
- *           type: string
- *         content:
- *           type: string
- *         regdate:
- *           type: string
- *           format: date-time
- */
-
-/**
- * @swagger
- * /memos:
- *   get:
- *     summary: Get all memos
- *     responses:
- *       200:
- *         description: List of memos
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Memo'
- *   post:
- *     summary: Create a new memo
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - title
- *               - content
- *             properties:
- *               title:
- *                 type: string
- *               content:
- *                 type: string
- *     responses:
- *       201:
- *         description: Memo created
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Memo'
- *
- * /memos/{id}:
- *   get:
- *     summary: Get a memo by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: Memo ID
- *     responses:
- *       200:
- *         description: Memo found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Memo'
- *       404:
- *         description: Memo not found
- *   put:
- *     summary: Update a memo by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: Memo ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *               content:
- *                 type: string
- *     responses:
- *       200:
- *         description: Memo updated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Memo'
- *       404:
- *         description: Memo not found
- *   delete:
- *     summary: Delete a memo by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: Memo ID
- *     responses:
- *       204:
- *         description: Memo deleted
- *       404:
- *         description: Memo not found
- */
-
-// 기존 /memos 라우트 삭제 후 아래 코드로 대체
-app.use("/memos", memoRoutes);
-
-// Swagger UI
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-// Swagger JSON
-app.get("/swagger.json", (req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.send(swaggerSpec);
-});
-
-app.listen(PORT, () => {
-  console.log(`Memo API server running at http://localhost:${PORT}`);
-  console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
-});
+// 서버 시작
+startServer();
