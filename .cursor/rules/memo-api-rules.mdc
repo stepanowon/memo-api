@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+- SOLID 원칙을 준수해서 코드를 작성하고 SOLID 준수여부를 검사해줘
+- Clean Architecture를 준수하도록 하고 검사해줘
+- 모든 코드는 Typescrtipt를 사용해줘
+- Class를 사용하지 않도록 해.
+
+
+
