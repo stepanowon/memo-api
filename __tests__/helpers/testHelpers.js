@@ -9,15 +9,6 @@ const createTestApp = (container) => {
   const memoRoutes = createMemoRoutes(container);
   app.use("/memos", memoRoutes);
 
-  // 헬스체크 엔드포인트
-  app.get("/health", (req, res) => {
-    res.json({
-      status: "OK",
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    });
-  });
-
   return app;
 };
 

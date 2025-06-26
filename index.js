@@ -24,12 +24,57 @@ async function startServer() {
     // Swagger UI 설정
     app.use("/api-docs", swaggerMiddleware.serve, swaggerMiddleware.setup);
 
+    /**
+     * @swagger
+     * /swagger.json:
+     *   get:
+     *     summary: Get OpenAPI specification in JSON format
+     *     description: Returns the complete OpenAPI 3.0 specification document
+     *     tags:
+     *       - Documentation
+     *     responses:
+     *       200:
+     *         description: OpenAPI specification document
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               description: Complete OpenAPI 3.0 specification
+     */
     // Swagger JSON 엔드포인트
     app.get("/swagger.json", (req, res) => {
       res.setHeader("Content-Type", "application/json");
       res.send(swaggerMiddleware.spec);
     });
 
+    /**
+     * @swagger
+     * /health:
+     *   get:
+     *     summary: Health check endpoint
+     *     description: Returns server health status and uptime information
+     *     tags:
+     *       - System
+     *     responses:
+     *       200:
+     *         description: Server is healthy
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: string
+     *                   example: "OK"
+     *                 timestamp:
+     *                   type: string
+     *                   format: date-time
+     *                   example: "2024-01-01T00:00:00.000Z"
+     *                 uptime:
+     *                   type: number
+     *                   description: Server uptime in seconds
+     *                   example: 123.456
+     */
     // 헬스체크 엔드포인트
     app.get("/health", (req, res) => {
       res.json({

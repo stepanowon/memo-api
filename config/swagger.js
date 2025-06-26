@@ -19,7 +19,7 @@ const createSwaggerConfig = (port = 3000) => {
   const getSwaggerSpec = () => {
     const options = {
       swaggerDefinition,
-      apis: ["./routes/memoRoutes.js"],
+      apis: ["./routes/memoRoutes.js", "./index.js"],
     };
     return swaggerJsdoc(options);
   };
