@@ -18,14 +18,26 @@ function createMemoRoutes(container) {
    *         id:
    *           type: string
    *           format: uuid
+   *           description: 메모 고유 식별자
    *         title:
    *           type: string
+   *           description: 메모 제목
    *         content:
    *           type: string
+   *           description: 메모 내용
    *         regdate:
    *           type: integer
    *           format: int64
    *           description: 등록 시각 (timestamp, ms)
+   *         wordCount:
+   *           type: integer
+   *           description: 메모 단어 수
+   *         canBeModified:
+   *           type: boolean
+   *           description: 수정 가능 여부 (생성 후 24시간 이내)
+   *         isExpired:
+   *           type: boolean
+   *           description: 만료 여부 (생성 후 30일 경과)
    *     MemoResponse:
    *       type: object
    *       properties:
@@ -60,31 +72,55 @@ function createMemoRoutes(container) {
    * /memos:
    *   get:
    *     summary: Get all memos
-   *     description: 페이징(page, pageSize) 및 등록일(regdate) 역순 정렬 지원
+   *     description: 메모 목록을 페이징하여 조회합니다. 등록일(regdate) 역순으로 정렬되며, 각 메모에는 도메인 정보가 포함됩니다.
    *     parameters:
    *       - in: query
    *         name: page
    *         schema:
    *           type: integer
    *           default: 1
+   *           minimum: 1
    *         description: 페이지 번호 (1부터 시작)
    *       - in: query
    *         name: pageSize
    *         schema:
    *           type: integer
    *           default: 10
+   *           minimum: 1
+   *           maximum: 100
    *         description: 한 페이지당 메모 개수
    *     responses:
    *       200:
-   *         description: List of memos
+   *         description: 메모 목록 조회 성공
    *         content:
    *           application/json:
    *             schema:
    *               type: array
    *               items:
    *                 $ref: '#/components/schemas/Memo'
+   *             example:
+   *               - id: "c3fe2b14-ff09-4396-a3c3-c48b393b2db6"
+   *                 title: "제목 4"
+   *                 content: "내용 4"
+   *                 regdate: 1751775295481
+   *                 wordCount: 2
+   *                 canBeModified: true
+   *                 isExpired: false
+   *               - id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+   *                 title: "이전 메모"
+   *                 content: "이전 메모 내용"
+   *                 regdate: 1751775295400
+   *                 wordCount: 5
+   *                 canBeModified: false
+   *                 isExpired: false
    *       400:
-   *         description: Invalid pagination parameters
+   *         description: 잘못된 페이징 파라미터
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: 서버 오류
    *         content:
    *           application/json:
    *             schema:
@@ -187,22 +223,49 @@ function createMemoRoutes(container) {
    * /memos/{id}:
    *   get:
    *     summary: Get a memo by ID
+   *     description: 메모 ID로 특정 메모를 조회합니다. 도메인 정보(단어수, 수정가능여부, 만료여부)가 포함됩니다.
    *     parameters:
    *       - in: path
    *         name: id
    *         schema:
    *           type: string
+   *           format: uuid
    *         required: true
-   *         description: Memo ID
+   *         description: 조회할 메모의 ID
    *     responses:
    *       200:
-   *         description: Memo found
+   *         description: 메모 조회 성공
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Memo'
+   *             example:
+   *               id: "c3fe2b14-ff09-4396-a3c3-c48b393b2db6"
+   *               title: "제목 4"
+   *               content: "내용 4"
+   *               regdate: 1751775295481
+   *               wordCount: 2
+   *               canBeModified: true
+   *               isExpired: false
    *       404:
-   *         description: Memo not found
+   *         description: 메모를 찾을 수 없음
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 isSuccess:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: "조회할 메모가 없습니다."
+   *       500:
+   *         description: 서버 오류
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   router.get("/:id", async (req, res) => {
     try {
