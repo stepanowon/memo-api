@@ -9,18 +9,21 @@ const createMemoRequestDto = (title, content) => {
 const updateMemoRequestDto = (title, content) => {
   const dto = {};
   if (title !== undefined) {
-    dto.title = title.toString().trim();
+    dto.title = title?.toString().trim() || "";
   }
   if (content !== undefined) {
-    dto.content = content.toString().trim();
+    dto.content = content?.toString().trim() || "";
   }
   return dto;
 };
 
 const paginationRequestDto = (page, pageSize) => {
+  const parsedPage = parseInt(page);
+  const parsedPageSize = parseInt(pageSize);
+
   return {
-    page: parseInt(page) || 1,
-    pageSize: parseInt(pageSize) || 10,
+    page: parsedPage > 0 ? parsedPage : 1,
+    pageSize: parsedPageSize > 0 ? parsedPageSize : 10,
   };
 };
 
@@ -36,7 +39,7 @@ const memoResponseDto = (memo) => {
   };
 };
 
-const successResponseDto = (message, item = null) => {
+const successResponseDto = (message, item) => {
   return {
     isSuccess: true,
     message,
@@ -52,16 +55,21 @@ const errorResponseDto = (message, errors = []) => {
   };
 };
 
-const paginatedResponseDto = (items, page, pageSize, totalCount = null) => {
+const paginatedResponseDto = (items, page, pageSize, totalCount) => {
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const hasNext = page < totalPages;
+  const hasPrevious = page > 1;
+
   return {
+    isSuccess: true,
     items,
     pagination: {
       page,
       pageSize,
       totalCount,
-      hasNext: totalCount
-        ? page * pageSize < totalCount
-        : items.length === pageSize,
+      totalPages,
+      hasNext,
+      hasPrevious,
     },
   };
 };
