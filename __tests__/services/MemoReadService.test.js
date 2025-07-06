@@ -162,39 +162,4 @@ describe("MemoReadService", () => {
       expect(result).toBe(false);
     });
   });
-
-  describe("getExpiredMemos", () => {
-    it("만료된 메모들을 조회해야 함", async () => {
-      // Given
-      const currentTime = Date.now();
-      const expiredTime = currentTime - 31 * 24 * 60 * 60 * 1000; // 31일 전 (만료)
-      const notExpiredTime = currentTime - 29 * 24 * 60 * 60 * 1000; // 29일 전 (만료되지 않음)
-
-      const testMemos = [
-        createTestMemo({ id: "expired-1", regdate: expiredTime }),
-        createTestMemo({ id: "not-expired-1", regdate: notExpiredTime }),
-        createTestMemo({ id: "expired-2", regdate: expiredTime }),
-      ];
-
-      mockMemoRepository.findAll.mockResolvedValue(testMemos);
-
-      // When
-      const result = await memoReadService.getExpiredMemos();
-
-      // Then
-      expect(result).toHaveLength(2);
-      expect(result.map((memo) => memo.id)).toEqual(["expired-1", "expired-2"]);
-    });
-
-    it("Repository 에러 시 적절한 에러 메시지를 반환해야 함", async () => {
-      // Given
-      const repositoryError = new Error("Database connection failed");
-      mockMemoRepository.findAll.mockRejectedValue(repositoryError);
-
-      // When & Then
-      await expect(memoReadService.getExpiredMemos()).rejects.toThrow(
-        "만료된 메모 조회 중 오류가 발생했습니다: Database connection failed"
-      );
-    });
-  });
 });

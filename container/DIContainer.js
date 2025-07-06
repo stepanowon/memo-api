@@ -36,7 +36,6 @@ const createDIContainer = () => {
   // 모든 의존성이 등록되었는지 확인
   const validateDependencies = () => {
     const registeredNames = Array.from(dependencies.keys());
-    console.log("등록된 의존성:", registeredNames);
     return registeredNames.length > 0;
   };
 

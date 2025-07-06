@@ -1,34 +1,3 @@
-// Repository 인터페이스 (함수형)
-const createMemoRepositoryInterface = () => {
-  const findAll = async (page, pageSize) => {
-    throw new Error("findAll method must be implemented");
-  };
-
-  const findById = async (id) => {
-    throw new Error("findById method must be implemented");
-  };
-
-  const create = async (memo) => {
-    throw new Error("create method must be implemented");
-  };
-
-  const update = async (id, updates) => {
-    throw new Error("update method must be implemented");
-  };
-
-  const deleteById = async (id) => {
-    throw new Error("delete method must be implemented");
-  };
-
-  return {
-    findAll,
-    findById,
-    create,
-    update,
-    delete: deleteById,
-  };
-};
-
 // LokiJS 구현체 (함수형)
 const createLokiMemoRepository = (collection, database) => {
   const stripLokiFields = (obj) => {
@@ -92,6 +61,5 @@ const createLokiMemoRepository = (collection, database) => {
 };
 
 module.exports = {
-  createMemoRepositoryInterface,
   createLokiMemoRepository,
 };

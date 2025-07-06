@@ -23,8 +23,7 @@ memo-api/
 ├── 🔄 services/              # 유스케이스 (애플리케이션 비즈니스 로직)
 │   ├── MemoReadService.js    # 읽기 전용 유스케이스
 │   ├── MemoWriteService.js   # 쓰기 전용 유스케이스
-│   ├── MemoValidationService.js # 검증 유스케이스
-│   └── memoService.js        # (deprecated - 하위 호환성)
+│   └── MemoValidationService.js # 검증 유스케이스
 ├── 🔌 repositories/          # 데이터 접근 인터페이스
 │   └── MemoRepository.js     # Repository 패턴 구현
 ├── 🌐 routes/                # HTTP 인터페이스 어댑터

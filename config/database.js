@@ -8,7 +8,7 @@ let dbState = {
 };
 
 const initialize = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     dbState.db = new Loki(path.join(__dirname, "../memos.db"), {
       autoload: true,
       autoloadCallback: () => {

@@ -3,7 +3,6 @@ const createMockMemoReadService = () => ({
   getAllMemos: jest.fn(),
   getMemoById: jest.fn(),
   getMemoExists: jest.fn(),
-  getExpiredMemos: jest.fn(),
 });
 
 const createMockMemoWriteService = () => ({

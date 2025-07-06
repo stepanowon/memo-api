@@ -56,27 +56,10 @@ const createMemoReadService = (memoRepository) => {
     }
   };
 
-  const getExpiredMemos = async () => {
-    try {
-      // 모든 메모를 가져와서 만료된 것들만 필터링
-      const allMemosData = await memoRepository.findAll(1, 1000); // 임시로 큰 수
-
-      return allMemosData
-        .map((memoData) => createMemoFromData(memoData))
-        .filter((memoEntity) => memoEntity.isExpired())
-        .map((memoEntity) => memoEntity.toPlainObject());
-    } catch (error) {
-      throw new Error(
-        `만료된 메모 조회 중 오류가 발생했습니다: ${error.message}`
-      );
-    }
-  };
-
   return {
     getAllMemos,
     getMemoById,
     getMemoExists,
-    getExpiredMemos,
   };
 };
 
