@@ -72,6 +72,38 @@ describe("MemoValidationService", () => {
       expect(result1.isValid).toBe(false);
       expect(result2.isValid).toBe(false);
     });
+
+    it("도메인 엔터티에서 제목 검증 실패 시 적절한 에러를 반환해야 함", () => {
+      // Given - 너무 긴 제목으로 도메인 엔터티에서 검증 실패 유도
+      const longTitle = "a".repeat(201); // 200자 초과
+      const content = "유효한 내용";
+
+      // When
+      const result = memoValidationService.validateCreateMemo(
+        longTitle,
+        content
+      );
+
+      // Then
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain("제목은 200자를 초과할 수 없습니다.");
+    });
+
+    it("도메인 엔터티에서 내용 검증 실패 시 적절한 에러를 반환해야 함", () => {
+      // Given - 너무 긴 내용으로 도메인 엔터티에서 검증 실패 유도
+      const title = "유효한 제목";
+      const longContent = "a".repeat(5001); // 5000자 초과
+
+      // When
+      const result = memoValidationService.validateCreateMemo(
+        title,
+        longContent
+      );
+
+      // Then
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain("내용은 5000자를 초과할 수 없습니다.");
+    });
   });
 
   describe("validateUpdateMemo", () => {
@@ -180,6 +212,32 @@ describe("MemoValidationService", () => {
       // Then
       expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
+    });
+
+    it("null 제목에 대해 실패해야 함", () => {
+      // Given
+      const title = null;
+      const content = "유효한 내용";
+
+      // When
+      const result = memoValidationService.validateUpdateMemo(title, content);
+
+      // Then
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some((error) => error.includes("제목"))).toBe(true);
+    });
+
+    it("null 내용에 대해 실패해야 함", () => {
+      // Given
+      const title = "유효한 제목";
+      const content = null;
+
+      // When
+      const result = memoValidationService.validateUpdateMemo(title, content);
+
+      // Then
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some((error) => error.includes("내용"))).toBe(true);
     });
   });
 

@@ -11,18 +11,28 @@ const createMemo = (title, content, id = null, regdate = null) => {
     throw new Error("내용은 필수 입력 항목입니다.");
   }
 
-  if (title.length > 200) {
+  // trim 처리 후 빈 문자열 검증
+  const trimmedTitle = title.trim();
+  const trimmedContent = content.trim();
+
+  if (trimmedTitle.length === 0) {
+    throw new Error("제목은 필수 입력 항목입니다.");
+  }
+
+  if (trimmedContent.length === 0) {
+    throw new Error("내용은 필수 입력 항목입니다.");
+  }
+
+  if (trimmedTitle.length > 200) {
     throw new Error("제목은 200자를 초과할 수 없습니다.");
   }
 
-  if (content.length > 5000) {
+  if (trimmedContent.length > 5000) {
     throw new Error("내용은 5000자를 초과할 수 없습니다.");
   }
 
   const memoId = id || uuidv4();
   const createdDate = regdate || Date.now();
-  const trimmedTitle = title.trim();
-  const trimmedContent = content.trim();
 
   // 도메인 메서드들
   const isExpired = () => {
