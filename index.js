@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const { setupContainer } = require("./container/containerSetup");
 const createMemoRoutes = require("./routes/memoRoutes");
 
@@ -12,6 +13,14 @@ async function startServer() {
 
     // Express 미들웨어 설정
     app.use(express.json());
+    
+    // CORS 설정 - localhost:5173 오리진 허용
+    app.use(cors({
+      origin: ['http://localhost:5173'],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization']
+    }));
 
     // Swagger 설정
     const swaggerConfig = container.resolve("swaggerConfig");
