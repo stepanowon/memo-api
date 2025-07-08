@@ -56,7 +56,6 @@ describe("Memo API 통합 테스트", () => {
     app.use((error, req, res, next) => {
       // JSON 파싱 오류 처리
       if (error.type === 'entity.parse.failed') {
-        console.error("JSON 파싱 오류:", error.message);
         return res.status(400).json({
           isSuccess: false,
           message: "잘못된 JSON 형식입니다. 요청 본문을 확인해주세요.",
@@ -65,7 +64,6 @@ describe("Memo API 통합 테스트", () => {
       }
       
       // 기타 서버 오류 처리
-      console.error("서버 오류:", error);
       res.status(500).json({
         isSuccess: false,
         message: "서버 내부 오류가 발생했습니다.",
