@@ -54,7 +54,16 @@ describe("Memo API 통합 테스트", () => {
 
     // 전역 에러 핸들러
     app.use((error, req, res, next) => {
-      console.error("서버 오류:", error);
+      // JSON 파싱 오류 처리
+      if (error.type === 'entity.parse.failed') {
+        return res.status(400).json({
+          isSuccess: false,
+          message: "잘못된 JSON 형식입니다. 요청 본문을 확인해주세요.",
+          error: "Invalid JSON format"
+        });
+      }
+      
+      // 기타 서버 오류 처리
       res.status(500).json({
         isSuccess: false,
         message: "서버 내부 오류가 발생했습니다.",
@@ -337,7 +346,10 @@ describe("Memo API 통합 테스트", () => {
         .set("Content-Type", "application/json")
         .send("{ invalid json }");
 
-      expect([400, 500]).toContain(response.status); // Express가 400 또는 500으로 처리할 수 있음
+      expect(response.status).toBe(400);
+      expect(response.body.isSuccess).toBe(false);
+      expect(response.body.message).toBe("잘못된 JSON 형식입니다. 요청 본문을 확인해주세요.");
+      expect(response.body.error).toBe("Invalid JSON format");
     });
 
     it("Content-Type이 없는 요청에 대해 적절히 처리해야 함", async () => {
